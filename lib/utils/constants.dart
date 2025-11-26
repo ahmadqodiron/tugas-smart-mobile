@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static const primary = Color(0xFFA00000); // Red dark
+  static const primary = Color(0xFF8B0000); // Wine red primary
+  static const secondary = Color(0xFFD32F2F); // Lighter red for gradients
   static const white = Color(0xFFFFFFFF);
   static const black = Color(0xFF000000);
+  static const softGray = Color(0xFFF5F5F7);
   static const accentYellow = Color(0xFFFFD23F);
   static const cardBackground = Color(0xFFF9F9F9);
+  static const premiumGray = Color(0xFF9E9E9E); // Premium gray for subtitles
+  static const shadowColor = Color(0x1F000000); // Soft shadow
+  // Navigation colors
+  static const navSelected = Color(0xFF8B0000);
+  static const navUnselected = Color(0xFF6D6D6D);
 }
 
 class ApiConstants {

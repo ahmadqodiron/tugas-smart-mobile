@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/cart_provider.dart';
+import '../services/api_service.dart';
 import '../utils/constants.dart';
 
 class CheckoutScreen extends StatefulWidget {
@@ -68,21 +69,23 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              RadioListTile<String>(
-                title: const Text('Pay on Delivery'),
-                value: 'cash',
+              RadioGroup<String>(
                 groupValue: _paymentMethod,
                 onChanged: (value) {
                   setState(() => _paymentMethod = value!);
                 },
-              ),
-              RadioListTile<String>(
-                title: const Text('Credit/Debit Card'),
-                value: 'card',
-                groupValue: _paymentMethod,
-                onChanged: (value) {
-                  setState(() => _paymentMethod = value!);
-                },
+                child: Column(
+                  children: [
+                    ListTile(
+                      title: const Text('Pay on Delivery'),
+                      leading: Radio<String>(value: 'cash'),
+                    ),
+                    ListTile(
+                      title: const Text('Credit/Debit Card'),
+                      leading: Radio<String>(value: 'card'),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 24),
               Container(
@@ -145,10 +148,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // Here you would call the API to place the order
-      // For now, just show success and clear cart
-      await Future.delayed(const Duration(seconds: 2)); // Simulate API call
-
+      await ApiService().placeOrder(_addressController.text, _paymentMethod);
       if (mounted) {
         context.read<CartProvider>().clearCart();
         ScaffoldMessenger.of(context).showSnackBar(

@@ -19,6 +19,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   int _quantity = 1;
   bool _isFavorite = false;
   bool _isLoading = false;
+  final Map<String, bool> _selectedAddOns = {};
 
   @override
   void initState() {
@@ -42,21 +43,27 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     try {
       if (_isFavorite) {
         await ApiService().removeFromFavorites(widget.product.id);
-        setState(() => _isFavorite = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Removed from favorites')),
-        );
+        if (mounted) {
+          setState(() => _isFavorite = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Removed from favorites')),
+          );
+        }
       } else {
         await ApiService().addToFavorites(widget.product.id);
-        setState(() => _isFavorite = true);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Added to favorites')),
-        );
+        if (mounted) {
+          setState(() => _isFavorite = true);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Added to favorites')),
+          );
+        }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to update favorites')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to update favorites')),
+        );
+      }
     }
     setState(() => _isLoading = false);
   }
@@ -65,13 +72,17 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     setState(() => _isLoading = true);
     try {
       await context.read<CartProvider>().addToCart(widget.product, _quantity);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Added $_quantity ${widget.product.name}(s) to cart')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Added $_quantity ${widget.product.name}(s) to cart')),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to add to cart')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to add to cart')),
+        );
+      }
     }
     setState(() => _isLoading = false);
   }
@@ -175,6 +186,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   _buildAddOn('Extra Cheese', 2.50),
                   _buildAddOn('Bacon', 3.00),
                   _buildAddOn('Mushrooms', 1.50),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Total Add-ons: \$${_calculateAddOnsTotal().toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
+                  ),
                   const SizedBox(height: 20),
                   const Text(
                     'Quantity',
@@ -256,7 +275,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         ],
         currentIndex: 2, // Home is selected
         onTap: (index) {
-          // Handle navigation
+          Navigator.of(context).popUntil((route) => route.isFirst);
+          // Since main navigation handles the index, we can pass it somehow, but for simplicity, just pop
         },
       ),
     );
@@ -266,9 +286,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     return Row(
       children: [
         Checkbox(
-          value: false, // You can manage state for add-ons
+          value: _selectedAddOns[name] ?? false,
           onChanged: (value) {
-            // Handle add-on selection
+            setState(() {
+              _selectedAddOns[name] = value ?? false;
+            });
           },
         ),
         Expanded(
@@ -283,5 +305,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         ),
       ],
     );
+  }
+
+  double _calculateAddOnsTotal() {
+    double total = 0;
+    if (_selectedAddOns['Extra Cheese'] == true) total += 2.50;
+    if (_selectedAddOns['Bacon'] == true) total += 3.00;
+    if (_selectedAddOns['Mushrooms'] == true) total += 1.50;
+    return total;
   }
 }

@@ -53,6 +53,9 @@ dependencies:
   # SVG support
   flutter_svg: ^2.0.10+1
 
+  # Barcode scanning
+  mobile_scanner: ^5.2.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

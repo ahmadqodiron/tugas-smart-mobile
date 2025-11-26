@@ -32,8 +32,8 @@ class ApiService {
 
   Map<String, String> _getHeaders({bool auth = false}) {
     final headers = {'Content-Type': 'application/json'};
-    if (auth) {
-      headers['Authorization'] = 'Bearer ${_token}';
+    if (auth && _token != null) {
+      headers['Authorization'] = 'Bearer $_token';
     }
     return headers;
   }

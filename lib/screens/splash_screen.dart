@@ -1,7 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/auth_provider.dart';
 import '../utils/constants.dart';
 import 'main_navigation.dart';
 
@@ -13,6 +11,9 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  Timer? _timer;
+  static const Duration _splashDuration = Duration(seconds: 3);
+
   @override
   void initState() {
     super.initState();
@@ -20,59 +21,47 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void _startSplashTimer() {
-    Timer(const Duration(seconds: 3), () {
+    _timer = Timer(_splashDuration, () {
       if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const MainNavigation()),
-        );
+        _navigateToMain();
       }
     });
   }
 
+  void _navigateToMain() {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => const MainNavigation()),
+    );
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    const baseStyle = TextStyle(
+      fontSize: 64,
+      fontWeight: FontWeight.bold,
+      color: AppColors.white,
+    );
     return Scaffold(
       backgroundColor: AppColors.primary,
-      body: Center(
+      body: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            RichText(
-              text: const TextSpan(
+            Text.rich(
+              TextSpan(
                 children: [
-                  TextSpan(
-                    text: 'B',
-                    style: TextStyle(
-                      fontSize: 64,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.white,
-                    ),
-                  ),
-                  TextSpan(
-                    text: 'ite',
-                    style: TextStyle(
-                      fontSize: 64,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.white,
-                    ),
-                  ),
-                  TextSpan(
-                    text: 'i',
-                    style: TextStyle(
-                      fontSize: 64,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.accentYellow,
-                    ),
-                  ),
-                  TextSpan(
-                    text: 'te',
-                    style: TextStyle(
-                      fontSize: 64,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.white,
-                    ),
-                  ),
+                  TextSpan(text: 'B'),
+                  TextSpan(text: 'ite'),
+                  TextSpan(text: 'i', style: TextStyle(color: AppColors.accentYellow)),
+                  TextSpan(text: 'te'),
                 ],
+                style: baseStyle,
               ),
             ),
           ],
