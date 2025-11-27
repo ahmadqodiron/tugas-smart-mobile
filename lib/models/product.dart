@@ -100,3 +100,35 @@ class User {
     );
   }
 }
+
+class Order {
+  final int id;
+  final List<CartItem> items;
+  final double total;
+  final String status;
+  final String address;
+  final String paymentMethod;
+  final DateTime createdAt;
+
+  Order({
+    required this.id,
+    required this.items,
+    required this.total,
+    required this.status,
+    required this.address,
+    required this.paymentMethod,
+    required this.createdAt,
+  });
+
+  factory Order.fromJson(Map<String, dynamic> json) {
+    return Order(
+      id: json['id'],
+      items: (json['items'] as List).map((item) => CartItem.fromJson(item)).toList(),
+      total: json['total'].toDouble(),
+      status: json['status'],
+      address: json['address'],
+      paymentMethod: json['payment_method'],
+      createdAt: DateTime.parse(json['created_at']),
+    );
+  }
+}

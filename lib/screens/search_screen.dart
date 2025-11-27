@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:provider/provider.dart';
 import '../models/product.dart';
 import '../services/api_service.dart';
 import '../utils/constants.dart';
+import '../providers/cart_provider.dart';
 import 'product_detail_screen.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -142,12 +144,12 @@ class _SearchScreenState extends State<SearchScreen> {
               spacing: 8,
               runSpacing: 8,
               children: [
-                'Shoes',
-                'Clothing',
-                'Electronics',
-                'Books',
+                'Nasi Goreng',
+                'Es Teh Manis',
+                'Kopi Hitam',
+                'Ayam Bakar Manis ',
                 'Home',
-                'Sports',
+            
               ].map((keyword) => _buildKeywordChip(keyword)).toList(),
             ),
             const SizedBox(height: 32),
@@ -207,48 +209,47 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _buildDummyProductCard(int index) {
-    final dummyProducts = [
-      {'name': 'Running Shoes', 'price': 89.99, 'image': 'https://via.placeholder.com/200'},
-      {'name': 'Wireless Headphones', 'price': 149.99, 'image': 'https://via.placeholder.com/200'},
-      {'name': 'Smart Watch', 'price': 299.99, 'image': 'https://via.placeholder.com/200'},
-      {'name': 'Laptop Bag', 'price': 49.99, 'image': 'https://via.placeholder.com/200'},
-    ];
+    final dummyProducts = _getFeaturedProducts();
     final product = dummyProducts[index];
 
     return GestureDetector(
       onTap: () {
-        // Navigate to product detail if needed
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ProductDetailScreen(product: product),
+          ),
+        );
       },
       child: Card(
         elevation: 2,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
               child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                child: Image.network(
-                  product['image'] as String,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                child: CachedNetworkImage(
+                  imageUrl: product.image,
                   fit: BoxFit.cover,
                   width: double.infinity,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return const Center(child: CircularProgressIndicator());
-                  },
-                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.error),
+                  placeholder: (context, url) => const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                  errorWidget: (context, url, error) => const Icon(Icons.error),
                 ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    product['name'] as String,
+                    product.name,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
@@ -258,11 +259,34 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '\$${(product['price'] as double).toStringAsFixed(2)}',
+                    'Rp ${product.price.toInt()}',
                     style: const TextStyle(
                       color: AppColors.primary,
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        try {
+                          await context.read<CartProvider>().addToCart(product, 1);
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Added to cart')),
+                            );
+                          }
+                        } catch (e) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Failed to add to cart')),
+                            );
+                          }
+                        }
+                      },
+                      child: const Text('Add to Cart'),
                     ),
                   ),
                 ],
@@ -272,6 +296,47 @@ class _SearchScreenState extends State<SearchScreen> {
         ),
       ),
     );
+  }
+
+  List<Product> _getFeaturedProducts() {
+    return [
+      Product(
+        id: 1,
+        name: 'Nasi Goreng Spesial',
+        image: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=400',
+        price: 25000,
+        description: 'Nasi goreng dengan telur, ayam, dan sayuran segar',
+        categoryId: 1,
+        categoryName: 'Makanan',
+      ),
+      Product(
+        id: 2,
+        name: 'Ayam Bakar Madu',
+        image: 'https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=400',
+        price: 35000,
+        description: 'Ayam bakar dengan saus madu dan rempah-rempah',
+        categoryId: 1,
+        categoryName: 'Makanan',
+      ),
+      Product(
+        id: 3,
+        name: 'Es Teh Manis',
+        image: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=400',
+        price: 5000,
+        description: 'Es teh manis segar dengan lemon',
+        categoryId: 2,
+        categoryName: 'Minuman',
+      ),
+      Product(
+        id: 4,
+        name: 'Jus Jeruk',
+        image: 'https://images.unsplash.com/photo-1600271886742-f049cd451bba?w=400',
+        price: 10000,
+        description: 'Jus jeruk segar tanpa gula tambahan',
+        categoryId: 2,
+        categoryName: 'Minuman',
+      ),
+    ];
   }
 
   Widget _buildSearchResults() {
@@ -286,65 +351,78 @@ class _SearchScreenState extends State<SearchScreen> {
       itemCount: _searchResults.length,
       itemBuilder: (context, index) {
         final product = _searchResults[index];
-        return GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => ProductDetailScreen(product: product),
-              ),
-            );
-          },
-          child: Card(
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                    child: CachedNetworkImage(
-                      imageUrl: product.image,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      placeholder: (context, url) => const Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                      errorWidget: (context, url, error) => const Icon(Icons.error),
+        return Card(
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                  child: CachedNetworkImage(
+                    imageUrl: product.image,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    placeholder: (context, url) => const Center(
+                      child: CircularProgressIndicator(),
                     ),
+                    errorWidget: (context, url, error) => const Icon(Icons.error),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        product.name,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      product.name,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '\$${product.price.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Rp ${product.price.toInt()}',
+                      style: const TextStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          try {
+                            await context.read<CartProvider>().addToCart(product, 1);
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Added to cart')),
+                              );
+                            }
+                          } catch (e) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Failed to add to cart')),
+                              );
+                            }
+                          }
+                        },
+                        child: const Text('Add to Cart'),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },

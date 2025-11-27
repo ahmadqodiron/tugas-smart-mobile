@@ -40,6 +40,7 @@ class ApiConstants {
   static const favoritesRemove = '$baseUrl/favorites/remove';
 
   // Order endpoints
+  static const orders = '$baseUrl/orders';
   static const orderPlace = '$baseUrl/order/place';
   static const userAddress = '$baseUrl/user/address';
   static const payment = '$baseUrl/payment';

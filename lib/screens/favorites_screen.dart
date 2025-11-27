@@ -165,24 +165,37 @@ class _FavoritesScreenState extends State<FavoritesScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(),
-      body: SafeArea(
-        child: AnimatedBuilder(
-          animation: _fadeAnimation,
-          builder: (context, child) => Opacity(
-            opacity: _fadeAnimation.value,
-            child: child,
-          ),
-          child: Column(
-            children: [
-              _buildSearchBar(),
-              Expanded(
-                child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : _filteredFavorites.isEmpty && _searchQuery.isEmpty
-                        ? _buildEmptyState()
-                        : _buildFavoritesView(),
-              ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color.fromARGB(255, 250, 85, 85),
+              Color.fromARGB(255, 255, 212, 212),
+              Color.fromARGB(255, 255, 255, 255),
             ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
+          child: AnimatedBuilder(
+            animation: _fadeAnimation,
+            builder: (context, child) => Opacity(
+              opacity: _fadeAnimation.value,
+              child: child,
+            ),
+            child: Column(
+              children: [
+                _buildSearchBar(),
+                Expanded(
+                  child: _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : _filteredFavorites.isEmpty && _searchQuery.isEmpty
+                          ? _buildEmptyState()
+                          : _buildFavoritesView(),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -431,7 +444,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '\$${product.price.toStringAsFixed(2)}',
+                      'Rp ${product.price.toInt()}',
                       style: const TextStyle(
                         color: AppColors.primary,
                         fontWeight: FontWeight.w700,
@@ -539,7 +552,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '\$${product.price.toStringAsFixed(2)}',
+                        'Rp ${product.price.toInt()}',
                         style: const TextStyle(
                           color: AppColors.primary,
                           fontWeight: FontWeight.w700,

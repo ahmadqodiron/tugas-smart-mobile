@@ -120,6 +120,20 @@ class ApiService {
     throw Exception('Failed to load product');
   }
 
+  Future<Product> addProduct(String name, String image, double price, String description, int categoryId) async {
+    final response = await _post(ApiConstants.products, body: {
+      'name': name,
+      'image': image,
+      'price': price,
+      'description': description,
+      'category_id': categoryId,
+    }, auth: true);
+    if (response.statusCode == 201) {
+      return Product.fromJson(jsonDecode(response.body));
+    }
+    throw Exception('Failed to add product');
+  }
+
   Future<List<Category>> getCategories() async {
     final response = await _get(ApiConstants.categories);
     if (response.statusCode == 200) {
@@ -210,5 +224,14 @@ class ApiService {
       return jsonDecode(response.body);
     }
     throw Exception('Failed to place order');
+  }
+
+  Future<List<Order>> getOrders() async {
+    final response = await _get(ApiConstants.orders, auth: true);
+    if (response.statusCode == 200) {
+      final List data = jsonDecode(response.body);
+      return data.map((json) => Order.fromJson(json)).toList();
+    }
+    throw Exception('Failed to load orders');
   }
 }

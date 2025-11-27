@@ -56,6 +56,9 @@ dependencies:
   # Barcode scanning
   mobile_scanner: ^5.2.3
 
+  # Card swiper for carousel
+  card_swiper: ^3.0.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
